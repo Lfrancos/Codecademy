@@ -3,40 +3,16 @@ import './App.css';
 import { SearchBar } from "../searchBar/searchBar";
 import { SearchResults } from "../searchResults/searchResults";
 import { Playlist } from "../playlist/playlist"
+// import default from '../../util/Spotify';
+import { Spotify } from '../../util/Spotify';
 
 export class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchResults: [
-        {
-          name: "Name 1",
-          artist: 'Artist 1',
-          album: 'Album 1',
-          id: 1
-        },
-        {
-          name: "Name 2",
-          artist: 'Artist 2',
-          album: 'Album 2',
-          id: 2
-        }
-        ],
-      playListName: 'lorenzo Franco',
-      playListTrack: [
-        {
-          name: "playlistName 1",
-          artist: 'playlistArtist 1',
-          album: 'playlistAlbum 1',
-          id: 3
-        },
-        {
-          name: "playlistName 2",
-          artist: 'playlistArtist 2',
-          album: 'playlistAlbum 2',
-          id: 4
-        }
-      ]
+      searchResults: [],
+      playListName: 'My playlist',
+      playListTrack: []
     };
     this.addTrack = this.addTrack.bind(this);
     this.removeTrack = this.removeTrack.bind(this);
@@ -76,14 +52,22 @@ export class App extends React.Component {
 
 
   savePlaylist() {
-    this.setState({
-      tackURIs: [...this.state.playListTrack]
+    const trackUris = this.state.playListTrack.map(track => track.uri);
+    Spotify.savePlaylist(this.state.playListName, trackUris).then(() => {
+      this.setState({
+        playListName: 'New playlist',
+        playListTrack: []
+      })
     })
   }
 
-  search(searchTerm) {
-    console.log(searchTerm);
+  search( term ) {
+    Spotify.search( term ).then(results => {
+      this.setState({ searchResults: results})
+    });
   }
+
+
   render() {
     return (
     <div>
@@ -96,7 +80,7 @@ export class App extends React.Component {
           <SearchResults
             searchResults={this.state.searchResults}
             onAdd={this.addTrack}
-          />
+        />
           <Playlist
             playListName={this.state.playListName}
             playListTrack={this.state.playListTrack}
